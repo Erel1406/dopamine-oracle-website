@@ -3,25 +3,180 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden; /* allow vertical scroll on the landing page */
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The immersive map route locks scrolling and disables overscroll. */
+body.map-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 @layer utilities {
+  /* Frosted "neo-occult" glass surface used by the info panel. */
+  .glass {
+    background: linear-gradient(
+      155deg,
+      rgba(22, 22, 26, 0.72) 0%,
+      rgba(10, 10, 10, 0.78) 100%
+    );
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .text-glow-ember {
+    text-shadow: 0 0 18px rgba(255, 122, 24, 0.55),
+      0 0 42px rgba(255, 122, 24, 0.25);
+  }
+
+  /* Cinematic deep-space nebula — Skyrim-style teal clouds with ember wisps. */
+  .nebula {
+    background-color: #05070b;
+    background-image:
+      radial-gradient(
+        ellipse 50% 40% at 22% 28%,
+        rgba(34, 168, 180, 0.16) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 45% 38% at 75% 22%,
+        rgba(56, 122, 220, 0.16) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse 55% 45% at 60% 72%,
+        rgba(120, 70, 200, 0.14) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 40% 35% at 30% 80%,
+        rgba(36, 150, 160, 0.14) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle at 48% 45%,
+        rgba(255, 122, 24, 0.08) 0%,
+        transparent 35%
+      ),
+      radial-gradient(
+        circle at 85% 60%,
+        rgba(255, 140, 40, 0.06) 0%,
+        transparent 30%
+      );
+  }
+
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Reusable frosted card for the landing sections. */
+  .glass-card {
+    background: linear-gradient(
+      155deg,
+      rgba(20, 22, 28, 0.55) 0%,
+      rgba(8, 10, 14, 0.5) 100%
+    );
+    backdrop-filter: blur(14px) saturate(130%);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .text-glow-cyan {
+    text-shadow: 0 0 20px rgba(120, 205, 235, 0.5),
+      0 0 48px rgba(80, 150, 195, 0.3);
+  }
+
+  /* Slow drifting motion for nebula clouds — gives the sky life. */
+  @keyframes nebula-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(2.5%, -2%, 0) scale(1.06);
+    }
+  }
+  @keyframes nebula-drift-slow {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1.04);
+    }
+    50% {
+      transform: translate3d(-3%, 2.5%, 0) scale(1);
+    }
+  }
+  @keyframes fog-drift {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(-2%, 1.5%);
+    }
+  }
+  @keyframes fog-drift-rev {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(2.5%, -1.5%);
+    }
+  }
+  .animate-nebula-drift {
+    animation: nebula-drift 26s ease-in-out infinite;
+  }
+  .animate-nebula-drift-slow {
+    animation: nebula-drift-slow 34s ease-in-out infinite;
+  }
+  .animate-fog-drift {
+    animation: fog-drift 40s ease-in-out infinite;
+    transform-origin: center;
+  }
+  .animate-fog-drift-rev {
+    animation: fog-drift-rev 48s ease-in-out infinite;
+    transform-origin: center;
+  }
+}
+
+/* Respect users who prefer less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-nebula-drift,
+  .animate-nebula-drift-slow,
+  .animate-fog-drift,
+  .animate-fog-drift-rev {
+    animation: none !important;
+  }
+
+  /* Hide the panel scrollbar but keep it scrollable. */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
