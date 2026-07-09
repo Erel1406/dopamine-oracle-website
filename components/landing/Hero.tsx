@@ -81,7 +81,7 @@ export default function Hero() {
         >
           <Link
             href="/map"
-            className="group flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-ember-deep via-ember to-ember-soft px-7 py-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-noir-900 transition-all duration-300 hover:shadow-[0_0_34px_rgba(255,122,24,0.6)] sm:w-auto"
+            className="btn-rune btn-rune-ember group flex w-full items-center justify-center gap-2 px-8 py-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-noir-900 sm:w-auto"
           >
             Explore the Constellation Map
             <ArrowRight
@@ -91,7 +91,7 @@ export default function Hero() {
           </Link>
           <Link
             href="/#oracle"
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-white/10 sm:w-auto"
+            className="btn-rune btn-rune-ghost flex w-full items-center justify-center gap-2 px-8 py-4 font-display text-sm font-semibold uppercase tracking-[0.16em] text-white/85 transition-colors hover:text-white sm:w-auto"
           >
             Talk to the Oracle
           </Link>
@@ -113,8 +113,6 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* fade into next section */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[#04060a]" />
     </section>
   );
 }

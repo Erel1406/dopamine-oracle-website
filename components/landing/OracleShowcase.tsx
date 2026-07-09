@@ -50,7 +50,7 @@ export default function OracleShowcase() {
 
           <Link
             href="/map"
-            className="group mt-9 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-ember-deep via-ember to-ember-soft px-7 py-3.5 font-display text-sm font-semibold uppercase tracking-[0.16em] text-noir-900 transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,122,24,0.55)]"
+            className="btn-rune btn-rune-ember group mt-9 inline-flex items-center gap-2 px-8 py-3.5 font-display text-sm font-semibold uppercase tracking-[0.16em] text-noir-900"
           >
             <Sparkles size={16} />
             Wake the Oracle

@@ -1,10 +1,31 @@
 export type Point = [number, number];
 
+/** Free "Sign Lore" facts shown in the info panel. */
+export type SignFacts = {
+  /** Ruling celestial body, e.g. "Mars". */
+  ruler: string;
+  /** Classic figure of the sign, e.g. "The Ram". */
+  symbol: string;
+  modality: "Cardinal" | "Fixed" | "Mutable";
+  luckyDay: string;
+  luckyNumbers: number[];
+  /** Most compatible signs (display names). */
+  allies: string[];
+  strengths: string[];
+  shadows: string[];
+};
+
 export type ZodiacSign = {
   id: string;
   name: string;
   dates: string;
   element: "Fire" | "Earth" | "Air" | "Water";
+  /**
+   * One-to-two-line "school description" shown Skyrim-style at the bottom
+   * of the map when the sign is selected.
+   */
+  lore: string;
+  facts: SignFacts;
   /** A short, cryptic "Daily Truth" teaser. */
   dailyTruth: string;
   /** What the Oracle already "knows" — freemium teaser bullets. */
@@ -27,6 +48,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Aries",
     dates: "Mar 21 — Apr 19",
     element: "Fire",
+    lore: "The House of Aries is the first spark of the wheel — the untamed fire of beginnings. Those born beneath the Ram charge where others hesitate.",
+    facts: {
+      ruler: "Mars",
+      symbol: "The Ram",
+      modality: "Cardinal",
+      luckyDay: "Tuesday",
+      luckyNumbers: [1, 9],
+      allies: ["Leo", "Sagittarius", "Gemini"],
+      strengths: ["Courageous", "Direct", "Pioneering"],
+      shadows: ["Impatient", "Impulsive", "Quick-tempered"],
+    },
     dailyTruth: "A spark you ignored at dawn becomes a fire by dusk.",
     oracleKnows: [
       "You move before you are ready — and you are usually right.",
@@ -57,6 +89,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Taurus",
     dates: "Apr 20 — May 20",
     element: "Earth",
+    lore: "The House of Taurus is the garden of the zodiac — slow, fertile and unshakeable. What the Bull plants, no storm can uproot.",
+    facts: {
+      ruler: "Venus",
+      symbol: "The Bull",
+      modality: "Fixed",
+      luckyDay: "Friday",
+      luckyNumbers: [2, 6],
+      allies: ["Virgo", "Capricorn", "Cancer"],
+      strengths: ["Steadfast", "Patient", "Devoted"],
+      shadows: ["Stubborn", "Possessive", "Comfort-bound"],
+    },
     dailyTruth: "What you root in silence today, no storm can uproot.",
     oracleKnows: [
       "You confuse stubbornness with loyalty — the stars do not.",
@@ -96,6 +139,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Gemini",
     dates: "May 21 — Jun 20",
     element: "Air",
+    lore: "The House of Gemini holds two voices beneath one star. The Twins speak every language of the heart — and trust none of them completely.",
+    facts: {
+      ruler: "Mercury",
+      symbol: "The Twins",
+      modality: "Mutable",
+      luckyDay: "Wednesday",
+      luckyNumbers: [5, 14],
+      allies: ["Libra", "Aquarius", "Aries"],
+      strengths: ["Quick-witted", "Curious", "Adaptable"],
+      shadows: ["Restless", "Scattered", "Two-tongued"],
+    },
     dailyTruth: "Two voices. Only one is telling you the truth.",
     oracleKnows: [
       "You are never lonely, yet rarely known.",
@@ -130,6 +184,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Cancer",
     dates: "Jun 21 — Jul 22",
     element: "Water",
+    lore: "The House of Cancer is ruled by the tide-turning Moon. The Crab carries its home upon its back and its past within its shell.",
+    facts: {
+      ruler: "The Moon",
+      symbol: "The Crab",
+      modality: "Cardinal",
+      luckyDay: "Monday",
+      luckyNumbers: [2, 7],
+      allies: ["Scorpio", "Pisces", "Taurus"],
+      strengths: ["Intuitive", "Protective", "Loyal"],
+      shadows: ["Moody", "Guarded", "Clinging"],
+    },
     dailyTruth: "The tide remembers a name you are trying to forget.",
     oracleKnows: [
       "Your shell was built by someone you have already forgiven.",
@@ -158,6 +223,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Leo",
     dates: "Jul 23 — Aug 22",
     element: "Fire",
+    lore: "The House of Leo burns at the centre of the sky. The Lion does not seek the crown — it was born already wearing it.",
+    facts: {
+      ruler: "The Sun",
+      symbol: "The Lion",
+      modality: "Fixed",
+      luckyDay: "Sunday",
+      luckyNumbers: [1, 19],
+      allies: ["Aries", "Sagittarius", "Libra"],
+      strengths: ["Radiant", "Generous", "Bold"],
+      shadows: ["Prideful", "Theatrical", "Praise-hungry"],
+    },
     dailyTruth: "The crown is not given. Tonight, you take it.",
     oracleKnows: [
       "You wear leadership like a second skin you forgot you put on.",
@@ -190,6 +266,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Virgo",
     dates: "Aug 23 — Sep 22",
     element: "Earth",
+    lore: "The House of Virgo weaves order out of chaos. The Maiden sees the flaw in all things — and chooses to love them anyway.",
+    facts: {
+      ruler: "Mercury",
+      symbol: "The Maiden",
+      modality: "Mutable",
+      luckyDay: "Wednesday",
+      luckyNumbers: [5, 23],
+      allies: ["Taurus", "Capricorn", "Cancer"],
+      strengths: ["Precise", "Devoted", "Discerning"],
+      shadows: ["Overcritical", "Anxious", "Perfection-bound"],
+    },
     dailyTruth: "Order is a spell. You have been casting it all along.",
     oracleKnows: [
       "You mistake your own kindness for weakness — it is the opposite.",
@@ -227,6 +314,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Libra",
     dates: "Sep 23 — Oct 22",
     element: "Air",
+    lore: "The House of Libra holds the only lifeless symbol in the heavens — the Scales — for balance is not born, it is chosen.",
+    facts: {
+      ruler: "Venus",
+      symbol: "The Scales",
+      modality: "Cardinal",
+      luckyDay: "Friday",
+      luckyNumbers: [6, 15],
+      allies: ["Gemini", "Aquarius", "Leo"],
+      strengths: ["Harmonious", "Fair", "Charming"],
+      shadows: ["Indecisive", "Conflict-averse", "Self-forgetting"],
+    },
     dailyTruth: "A scale tips at midnight. Choose before it chooses you.",
     oracleKnows: [
       "You keep the peace by waging quiet wars with yourself.",
@@ -254,6 +352,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Scorpio",
     dates: "Oct 23 — Nov 21",
     element: "Water",
+    lore: "The House of Scorpio guards the deep water of the zodiac. What the Scorpion buries is never gone — only waiting.",
+    facts: {
+      ruler: "Pluto & Mars",
+      symbol: "The Scorpion",
+      modality: "Fixed",
+      luckyDay: "Tuesday",
+      luckyNumbers: [8, 11],
+      allies: ["Cancer", "Pisces", "Virgo"],
+      strengths: ["Intense", "Loyal", "Transformative"],
+      shadows: ["Secretive", "Jealous", "Unforgetting"],
+    },
     dailyTruth: "What you buried is breathing again beneath the surface.",
     oracleKnows: [
       "You forgive, but the stars know you never truly forget.",
@@ -297,6 +406,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Sagittarius",
     dates: "Nov 22 — Dec 21",
     element: "Fire",
+    lore: "The House of Sagittarius aims beyond the edge of every map. The Archer's arrow is faith itself — loosed before the target is seen.",
+    facts: {
+      ruler: "Jupiter",
+      symbol: "The Archer",
+      modality: "Mutable",
+      luckyDay: "Thursday",
+      luckyNumbers: [3, 9],
+      allies: ["Aries", "Leo", "Aquarius"],
+      strengths: ["Honest", "Adventurous", "Optimistic"],
+      shadows: ["Restless", "Blunt", "Commitment-shy"],
+    },
     dailyTruth: "The arrow has already left. Stop aiming. Start trusting.",
     oracleKnows: [
       "You run toward horizons to avoid the room you are standing in.",
@@ -329,6 +449,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Capricorn",
     dates: "Dec 22 — Jan 19",
     element: "Earth",
+    lore: "The House of Capricorn climbs the longest mountain in the sky. The Sea-Goat was old when the world was young — and it is patient still.",
+    facts: {
+      ruler: "Saturn",
+      symbol: "The Sea-Goat",
+      modality: "Cardinal",
+      luckyDay: "Saturday",
+      luckyNumbers: [4, 8],
+      allies: ["Taurus", "Virgo", "Scorpio"],
+      strengths: ["Disciplined", "Enduring", "Wise"],
+      shadows: ["Unbending", "Work-bound", "Grave"],
+    },
     dailyTruth: "The summit you fear is lower than the one you've climbed.",
     oracleKnows: [
       "You aged early so you could stay young later — the stars approve.",
@@ -358,6 +489,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Aquarius",
     dates: "Jan 20 — Feb 18",
     element: "Air",
+    lore: "The House of Aquarius pours out a future the present cannot yet hold. The Water-Bearer walks apart — not above the others, but ahead.",
+    facts: {
+      ruler: "Uranus & Saturn",
+      symbol: "The Water-Bearer",
+      modality: "Fixed",
+      luckyDay: "Saturday",
+      luckyNumbers: [7, 22],
+      allies: ["Gemini", "Libra", "Sagittarius"],
+      strengths: ["Visionary", "Independent", "Humanitarian"],
+      shadows: ["Detached", "Contrary", "Unreachable"],
+    },
     dailyTruth: "A future only you can see is leaking into the present.",
     oracleKnows: [
       "You belong to everyone, which is why you belong to no one yet.",
@@ -388,6 +530,17 @@ export const ZODIAC_SIGNS: ZodiacSign[] = [
     name: "Pisces",
     dates: "Feb 19 — Mar 20",
     element: "Water",
+    lore: "The House of Pisces is the last dream of the zodiac, where all rivers return. The Fishes swim in two directions — and both lead home.",
+    facts: {
+      ruler: "Neptune & Jupiter",
+      symbol: "The Fishes",
+      modality: "Mutable",
+      luckyDay: "Thursday",
+      luckyNumbers: [7, 12],
+      allies: ["Cancer", "Scorpio", "Capricorn"],
+      strengths: ["Empathic", "Imaginative", "Devoted"],
+      shadows: ["Escapist", "Boundary-less", "Self-dissolving"],
+    },
     dailyTruth: "The dream was not a dream. Look again when you wake.",
     oracleKnows: [
       "You absorb other people's storms and call them your own.",

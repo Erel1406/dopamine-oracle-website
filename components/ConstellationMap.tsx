@@ -54,12 +54,37 @@ export default function ConstellationMap({
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // Center the whole canvas once we know the viewport size (first paint).
+  // Where the canvas offset must sit so `sign` lands in the visual focus
+  // (centre of the area left free by the desktop info panel).
+  const signTarget = useCallback(
+    (sign: ZodiacSign) => {
+      const isWide = size.w >= 768;
+      const focusX = isWide ? (size.w - PANEL_WIDTH) / 2 : size.w / 2;
+      const p = signPx(sign);
+      return {
+        x: clamp(focusX - p.x, bounds.left, bounds.right),
+        y: clamp(size.h / 2 - p.y, bounds.top, bounds.bottom),
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [size.w, size.h]
+  );
+
+  // First paint: land directly on a deep-linked sign, otherwise centre the sky.
   const didCenter = useRef(false);
   useEffect(() => {
     if (didCenter.current || size.w === 0) return;
-    x.set(clamp((size.w - CANVAS_WIDTH) / 2, bounds.left, bounds.right));
-    y.set(clamp((size.h - CANVAS_HEIGHT) / 2, bounds.top, bounds.bottom));
+    const initial = activeId
+      ? ZODIAC_SIGNS.find((s) => s.id === activeId)
+      : null;
+    if (initial) {
+      const t = signTarget(initial);
+      x.set(t.x);
+      y.set(t.y);
+    } else {
+      x.set(clamp((size.w - CANVAS_WIDTH) / 2, bounds.left, bounds.right));
+      y.set(clamp((size.h - CANVAS_HEIGHT) / 2, bounds.top, bounds.bottom));
+    }
     didCenter.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size.w, size.h]);
@@ -70,6 +95,10 @@ export default function ConstellationMap({
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      // Kill any running centering spring first — otherwise it keeps
+      // driving x/y and the wheel input feels delayed/laggy.
+      x.stop();
+      y.stop();
       x.set(clamp(x.get() - e.deltaX, bounds.left, bounds.right));
       y.set(clamp(y.get() - e.deltaY, bounds.top, bounds.bottom));
     };
@@ -82,18 +111,13 @@ export default function ConstellationMap({
   const centerOnSign = useCallback(
     (sign: ZodiacSign) => {
       if (size.w === 0) return;
-      const isWide = size.w >= 768;
-      const focusX = isWide ? (size.w - PANEL_WIDTH) / 2 : size.w / 2;
-      const focusY = size.h / 2;
-      const p = signPx(sign);
-      const targetX = clamp(focusX - p.x, bounds.left, bounds.right);
-      const targetY = clamp(focusY - p.y, bounds.top, bounds.bottom);
+      const t = signTarget(sign);
       const opts = { type: "spring", stiffness: 90, damping: 20 } as const;
-      animate(x, targetX, opts);
-      animate(y, targetY, opts);
+      animate(x, t.x, opts);
+      animate(y, t.y, opts);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [size.w, size.h]
+    [signTarget]
   );
 
   useEffect(() => {
@@ -107,12 +131,19 @@ export default function ConstellationMap({
       ref={viewportRef}
       className="absolute inset-0 overflow-hidden"
       style={{ touchAction: "none" }}
+      // Any press freezes the sky where it is. Without this, a tap during a
+      // centering spring (or leftover glide) lands on a moving canvas — the
+      // first tap only stops the motion and the second one selects.
+      onPointerDownCapture={() => {
+        x.stop();
+        y.stop();
+      }}
     >
       <motion.div
         drag
         dragConstraints={bounds}
-        dragElastic={0.05}
-        dragMomentum
+        dragElastic={0.04}
+        dragMomentum={false}
         style={{ x, y, width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
         className="relative cursor-grab active:cursor-grabbing"
       >
@@ -126,15 +157,32 @@ export default function ConstellationMap({
             <motion.button
               key={sign.id}
               type="button"
-              onClick={() => onSelect(sign.id)}
+              // `onTap` (not onClick) — the parent canvas is a framer `drag`
+              // surface which swallows native clicks; the tap gesture still
+              // fires for press+release without a pan, including on touch.
+              onTap={() => onSelect(sign.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect(sign.id);
+                }
+              }}
               aria-label={`${sign.name} — ${sign.dates}`}
               aria-pressed={isActive}
-              className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember/60"
+              className="group absolute z-10 cursor-pointer rounded-2xl p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember/60"
+              // Centering MUST go through framer's x/y, not Tailwind
+              // -translate-* classes: whileTap writes an inline transform
+              // that would wipe the CSS translation and make the whole
+              // constellation jump by half its size on press.
               style={{
                 left: `${sign.x}%`,
                 top: `${sign.y}%`,
+                x: "-50%",
+                y: "-50%",
                 width: CONSTELLATION_SIZE + 24,
                 height: CONSTELLATION_SIZE + 48,
+                WebkitTapHighlightColor: "transparent",
+                touchAction: "none",
               }}
               whileTap={{ scale: 0.97 }}
             >
@@ -174,7 +222,8 @@ export default function ConstellationMap({
               style={{
                 left: `${s.x}%`,
                 top: `${s.y}%`,
-                transform: "translate(-50%, 150px)",
+                x: "-50%",
+                y: 150,
               }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

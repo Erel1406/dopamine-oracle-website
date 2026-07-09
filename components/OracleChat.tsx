@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, Lock, Sparkles } from "lucide-react";
+import { ArrowUp, Gem, Lock, Sparkles } from "lucide-react";
 import type { ZodiacSign } from "@/lib/zodiac";
+import {
+  FREE_QUESTIONS,
+  MONTHLY_PRICE,
+  recordQuestion,
+  useSubscription,
+} from "@/lib/subscription";
 
 const SUGGESTIONS = [
   "Will I find love this year?",
@@ -11,14 +19,12 @@ const SUGGESTIONS = [
   "Who is meant to find me?",
 ];
 
-type Msg =
-  | { role: "user"; text: string }
-  | { role: "oracle"; locked: true };
-
 /**
- * A teaser conversation with the Oracle. The user may ask anything; the
- * Oracle always begins to answer — then veils the truth behind the
- * premium reading. Pure freemium upsell, no backend required.
+ * A live conversation with the Oracle (streamed from /api/oracle).
+ * Visitors get FREE_QUESTIONS for free; after that the chat locks and
+ * offers the monthly subscription (mocked until Stripe lands).
+ *
+ * Mount with `key={sign.id}` so the conversation resets per sign.
  */
 export default function OracleChat({
   sign,
@@ -27,29 +33,43 @@ export default function OracleChat({
   sign: ZodiacSign;
   onConsult: () => void;
 }) {
-  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
+  const { subscribed, remaining, locked, subscribe } = useSubscription();
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/oracle",
+      body: { sign: sign.id },
+    }),
+  });
+
+  const busy = status === "submitted" || status === "streaming";
 
   const ask = (raw: string) => {
     const text = raw.trim();
-    if (!text || thinking) return;
+    if (!text || busy || locked) return;
     setInput("");
-    setMessages((m) => [...m, { role: "user", text }]);
-    setThinking(true);
-    window.setTimeout(() => {
-      setThinking(false);
-      setMessages((m) => [...m, { role: "oracle", locked: true }]);
-    }, 1100);
+    sendMessage({ text });
+    if (!subscribed) {
+      // Client-side budget only while the paywall is mocked.
+      // TODO(stripe): enforce server-side once auth exists.
+      recordQuestion();
+    }
   };
 
   return (
     <div className="rounded-2xl border border-white/10 bg-noir-800/60 p-5">
-      <div className="mb-3 flex items-center gap-2 text-ember/80">
-        <Sparkles size={14} />
-        <span className="text-[11px] font-medium uppercase tracking-[0.32em]">
-          The Oracle
-        </span>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-ember/80">
+          <Sparkles size={14} />
+          <span className="text-[11px] font-medium uppercase tracking-[0.32em]">
+            The Oracle
+          </span>
+        </div>
+        {!subscribed && !locked && (
+          <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">
+            {remaining} of {FREE_QUESTIONS} free
+          </span>
+        )}
       </div>
 
       <p className="font-display text-[15px] leading-relaxed text-white/80">
@@ -71,50 +91,38 @@ export default function OracleChat({
       {/* Conversation */}
       <div className="mt-5 space-y-3">
         <AnimatePresence initial={false}>
-          {messages.map((m, i) =>
-            m.role === "user" ? (
+          {messages.map((m) => {
+            const text = m.parts
+              .map((p) => (p.type === "text" ? p.text : ""))
+              .join("");
+            if (!text) return null;
+            return m.role === "user" ? (
               <motion.div
-                key={`u-${i}`}
+                key={m.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-white/10 px-4 py-2.5 text-sm text-white/90"
               >
-                {m.text}
+                {text}
               </motion.div>
             ) : (
               <motion.div
-                key={`o-${i}`}
+                key={m.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="max-w-[92%]"
               >
-                <div className="relative overflow-hidden rounded-2xl rounded-bl-sm border border-ember/20 bg-ember/5 px-4 py-3">
-                  {/* Blurred "answer" the user cannot read */}
-                  <p
-                    aria-hidden
-                    className="select-none text-sm leading-relaxed text-white/70 blur-[5px]"
-                  >
-                    The stars align in your favour, yet a shadow crosses the
-                    seventh house. What you seek is closer than the moon, and
-                    the name begins with—
+                <div className="rounded-2xl rounded-bl-sm border border-ember/20 bg-ember/5 px-4 py-3">
+                  <p className="text-sm leading-relaxed text-white/85">
+                    {text}
                   </p>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-noir-900/40 backdrop-blur-[1px]">
-                    <Lock size={16} className="text-ember" />
-                    <button
-                      type="button"
-                      onClick={onConsult}
-                      className="text-xs font-medium uppercase tracking-[0.2em] text-ember underline-offset-4 hover:underline"
-                    >
-                      Unlock the Oracle&rsquo;s answer
-                    </button>
-                  </div>
                 </div>
               </motion.div>
-            )
-          )}
+            );
+          })}
         </AnimatePresence>
 
-        {thinking && (
+        {status === "submitted" && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -133,17 +141,24 @@ export default function OracleChat({
             </span>
           </motion.div>
         )}
+
+        {error && (
+          <p className="px-1 text-xs italic text-white/45">
+            The Oracle&rsquo;s sight is clouded — the connection to the stars
+            failed. Try again in a moment.
+          </p>
+        )}
       </div>
 
       {/* Suggestion chips (only before the first question) */}
-      {messages.length === 0 && !thinking && (
+      {messages.length === 0 && !busy && !locked && (
         <div className="mt-4 flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => ask(s)}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 transition hover:border-ember/40 hover:text-ember"
+              className="btn-rune btn-rune-xs btn-rune-ghost px-3.5 py-1.5 text-xs text-white/60 transition-colors hover:text-ember"
             >
               {s}
             </button>
@@ -151,29 +166,57 @@ export default function OracleChat({
         </div>
       )}
 
-      {/* Ask input */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          ask(input);
-        }}
-        className="mt-4 flex items-center gap-2 rounded-full border border-white/10 bg-noir-900/70 py-1.5 pl-4 pr-1.5 focus-within:border-ember/40"
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={`Ask the Oracle about your ${sign.name}…`}
-          className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-white/35 focus:outline-none"
-        />
-        <button
-          type="submit"
-          aria-label="Ask the Oracle"
-          disabled={thinking}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ember to-ember-deep text-noir-900 transition hover:shadow-[0_0_16px_rgba(255,122,24,0.7)] disabled:opacity-50"
+      {/* Ask input — or the paywall once the free questions are spent */}
+      {locked ? (
+        <div className="mt-5 rounded-2xl border border-ember/25 bg-noir-900/70 p-5 text-center">
+          <Lock size={18} className="mx-auto text-ember" />
+          <p className="mt-3 font-display text-[15px] leading-snug text-white/85">
+            The Oracle has spoken freely {FREE_QUESTIONS} times. To continue,
+            bind your stars to it.
+          </p>
+          <button
+            type="button"
+            onClick={subscribe}
+            className="btn-rune btn-rune-ember mt-4 w-full px-5 py-3 font-display text-sm font-semibold uppercase tracking-[0.16em] text-noir-900"
+          >
+            Join the Oracle — {MONTHLY_PRICE}/mo
+          </button>
+          <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] text-white/35">
+            <Gem size={11} /> Cancel anytime · Demo checkout — payment coming
+            soon
+          </p>
+          <button
+            type="button"
+            onClick={onConsult}
+            className="mt-2 text-[11px] uppercase tracking-[0.2em] text-ember/80 underline-offset-4 hover:underline"
+          >
+            See everything included
+          </button>
+        </div>
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            ask(input);
+          }}
+          className="mt-4 flex items-center gap-2 rounded-full border border-white/10 bg-noir-900/70 py-1.5 pl-4 pr-1.5 focus-within:border-ember/40"
         >
-          <ArrowUp size={16} />
-        </button>
-      </form>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={`Ask the Oracle about your ${sign.name}…`}
+            className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-white/35 focus:outline-none"
+          />
+          <button
+            type="submit"
+            aria-label="Ask the Oracle"
+            disabled={busy}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ember to-ember-deep text-noir-900 transition hover:shadow-[0_0_16px_rgba(255,122,24,0.7)] disabled:opacity-50"
+          >
+            <ArrowUp size={16} />
+          </button>
+        </form>
+      )}
     </div>
   );
 }

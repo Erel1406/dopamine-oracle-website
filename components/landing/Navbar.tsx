@@ -52,7 +52,7 @@ export default function Navbar() {
           ))}
           <Link
             href="/map"
-            className="rounded-full bg-gradient-to-r from-ember-deep via-ember to-ember-soft px-5 py-2.5 font-display text-xs font-semibold uppercase tracking-[0.18em] text-noir-900 transition-all duration-300 hover:shadow-[0_0_24px_rgba(255,122,24,0.55)]"
+            className="btn-rune btn-rune-sm btn-rune-ember px-5 py-2.5 font-display text-xs font-semibold uppercase tracking-[0.18em] text-noir-900"
           >
             Enter the Map
           </Link>
@@ -85,7 +85,7 @@ export default function Navbar() {
           <Link
             href="/map"
             onClick={() => setOpen(false)}
-            className="mt-2 rounded-full bg-gradient-to-r from-ember-deep via-ember to-ember-soft px-5 py-3 text-center font-display text-xs font-semibold uppercase tracking-[0.18em] text-noir-900"
+            className="btn-rune btn-rune-sm btn-rune-ember mt-2 px-5 py-3 text-center font-display text-xs font-semibold uppercase tracking-[0.18em] text-noir-900"
           >
             Enter the Map
           </Link>

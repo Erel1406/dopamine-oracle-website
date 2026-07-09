@@ -109,6 +109,96 @@ body.map-locked {
       0 0 48px rgba(80, 150, 195, 0.3);
   }
 
+  /* ── Rune buttons ─────────────────────────────────────────────
+     The site's signature CTA shape: an engraved plate with 45°-cut
+     corners (Skyrim menu plates), instead of generic rounded pills.
+     `.btn-rune` cuts the corners; combine with `-ember` (filled
+     primary) or `-ghost` (hairline gradient rim). */
+  .btn-rune {
+    --cut: 10px;
+    position: relative;
+    isolation: isolate;
+    cursor: pointer;
+    clip-path: polygon(
+      var(--cut) 0,
+      calc(100% - var(--cut)) 0,
+      100% var(--cut),
+      100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%,
+      var(--cut) 100%,
+      0 calc(100% - var(--cut)),
+      0 var(--cut)
+    );
+    transition: transform 0.15s ease, box-shadow 0.3s ease,
+      filter 0.3s ease;
+  }
+  .btn-rune:active {
+    transform: scale(0.98);
+  }
+  .btn-rune-sm {
+    --cut: 7px;
+  }
+  .btn-rune-xs {
+    --cut: 5px;
+  }
+
+  .btn-rune-ember {
+    background: linear-gradient(
+      100deg,
+      var(--tw-gradient-from, #c2410c) 0%,
+      #ff7a18 50%,
+      #ffb066 100%
+    );
+    /* engraved top light + grounded bottom edge */
+    box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.55),
+      inset 0 -2px 6px rgba(120, 40, 0, 0.45);
+  }
+  .btn-rune-ember:hover {
+    filter: drop-shadow(0 0 14px rgba(255, 122, 24, 0.55));
+  }
+
+  .btn-rune-ghost {
+    background: linear-gradient(
+      120deg,
+      rgba(255, 190, 110, 0.55),
+      rgba(255, 255, 255, 0.14) 30%,
+      rgba(255, 255, 255, 0.1) 68%,
+      rgba(120, 205, 235, 0.45)
+    );
+  }
+  .btn-rune-ghost::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: -1;
+    background: linear-gradient(
+      155deg,
+      rgba(20, 22, 28, 0.92) 0%,
+      rgba(8, 10, 14, 0.94) 100%
+    );
+    clip-path: polygon(
+      calc(var(--cut) - 1px) 0,
+      calc(100% - var(--cut) + 1px) 0,
+      100% calc(var(--cut) - 1px),
+      100% calc(100% - var(--cut) + 1px),
+      calc(100% - var(--cut) + 1px) 100%,
+      calc(var(--cut) - 1px) 100%,
+      0 calc(100% - var(--cut) + 1px),
+      0 calc(var(--cut) - 1px)
+    );
+    transition: background 0.3s ease;
+  }
+  .btn-rune-ghost:hover {
+    filter: drop-shadow(0 0 10px rgba(150, 205, 235, 0.35));
+  }
+  .btn-rune-ghost:hover::before {
+    background: linear-gradient(
+      155deg,
+      rgba(30, 33, 40, 0.92) 0%,
+      rgba(14, 17, 22, 0.94) 100%
+    );
+  }
+
   /* Slow drifting motion for nebula clouds — gives the sky life. */
   @keyframes nebula-drift {
     0%,
@@ -162,6 +252,15 @@ body.map-locked {
   }
 }
 
+/* Hide the panel scrollbar but keep it scrollable. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Respect users who prefer less motion. */
 @media (prefers-reduced-motion: reduce) {
   .animate-nebula-drift,
@@ -169,14 +268,5 @@ body.map-locked {
   .animate-fog-drift,
   .animate-fog-drift-rev {
     animation: none !important;
-  }
-
-  /* Hide the panel scrollbar but keep it scrollable. */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 }

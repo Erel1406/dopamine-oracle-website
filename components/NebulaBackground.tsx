@@ -13,22 +13,23 @@
 export default function NebulaBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden bg-[#04060a]">
-      {/* Deep base wash */}
+      {/* Deep base wash — cold navy with a green undertone, like Skyrim's sky */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(125% 90% at 50% 18%, #0b1622 0%, #070d16 38%, #04060a 72%)",
+            "radial-gradient(125% 90% at 50% 18%, #0a1a1c 0%, #071019 38%, #04060a 72%)",
         }}
       />
 
-      {/* Soft colour blobs — the painterly depth */}
+      {/* Soft colour blobs — the painterly depth (teal/green dominant) */}
       <div className="absolute inset-0">
-        <span className="nebula-blob animate-nebula-drift absolute left-[8%] top-[6%] h-[55vh] w-[55vw] rounded-full bg-[radial-gradient(circle,rgba(34,170,185,0.45),transparent_62%)] blur-[70px]" />
-        <span className="nebula-blob animate-nebula-drift-slow absolute right-[4%] top-[2%] h-[60vh] w-[50vw] rounded-full bg-[radial-gradient(circle,rgba(48,110,210,0.42),transparent_62%)] blur-[80px]" />
-        <span className="nebula-blob animate-nebula-drift absolute left-[28%] bottom-[-8%] h-[58vh] w-[60vw] rounded-full bg-[radial-gradient(circle,rgba(120,72,200,0.34),transparent_64%)] blur-[90px]" />
-        <span className="nebula-blob animate-nebula-drift-slow absolute right-[18%] bottom-[2%] h-[42vh] w-[40vw] rounded-full bg-[radial-gradient(circle,rgba(255,128,38,0.20),transparent_60%)] blur-[80px]" />
-        <span className="nebula-blob absolute left-[42%] top-[24%] h-[40vh] w-[30vw] rounded-full bg-[radial-gradient(circle,rgba(255,150,60,0.12),transparent_64%)] blur-[70px]" />
+        <span className="nebula-blob animate-nebula-drift absolute left-[8%] top-[6%] h-[55vh] w-[55vw] rounded-full bg-[radial-gradient(circle,rgba(30,175,160,0.5),transparent_62%)] blur-[70px]" />
+        <span className="nebula-blob animate-nebula-drift-slow absolute right-[4%] top-[2%] h-[60vh] w-[50vw] rounded-full bg-[radial-gradient(circle,rgba(40,120,190,0.4),transparent_62%)] blur-[80px]" />
+        <span className="nebula-blob animate-nebula-drift-slow absolute left-[52%] top-[30%] h-[48vh] w-[42vw] rounded-full bg-[radial-gradient(circle,rgba(36,150,105,0.34),transparent_62%)] blur-[85px]" />
+        <span className="nebula-blob animate-nebula-drift absolute left-[28%] bottom-[-8%] h-[58vh] w-[60vw] rounded-full bg-[radial-gradient(circle,rgba(90,70,180,0.26),transparent_64%)] blur-[90px]" />
+        <span className="nebula-blob animate-nebula-drift-slow absolute right-[18%] bottom-[2%] h-[42vh] w-[40vw] rounded-full bg-[radial-gradient(circle,rgba(255,128,38,0.18),transparent_60%)] blur-[80px]" />
+        <span className="nebula-blob absolute left-[42%] top-[24%] h-[40vh] w-[30vw] rounded-full bg-[radial-gradient(circle,rgba(255,150,60,0.1),transparent_64%)] blur-[70px]" />
       </div>
 
       {/* Ghostly vertical god-ray / figure */}
@@ -57,14 +58,14 @@ export default function NebulaBackground() {
               stitchTiles="stitch"
               result="n"
             />
-            {/* constant teal RGB, alpha driven by the noise red channel */}
+            {/* constant teal-green RGB, alpha driven by the noise red channel */}
             <feColorMatrix
               in="n"
               type="matrix"
-              values="0 0 0 0 0.10
-                      0 0 0 0 0.46
-                      0 0 0 0 0.54
-                      0.85 0 0 0 -0.18"
+              values="0 0 0 0 0.09
+                      0 0 0 0 0.50
+                      0 0 0 0 0.42
+                      0.95 0 0 0 -0.18"
             />
             <feGaussianBlur stdDeviation="5" />
           </filter>
@@ -81,9 +82,9 @@ export default function NebulaBackground() {
             <feColorMatrix
               in="n"
               type="matrix"
-              values="0 0 0 0 0.30
-                      0 0 0 0 0.30
-                      0 0 0 0 0.62
+              values="0 0 0 0 0.22
+                      0 0 0 0 0.34
+                      0 0 0 0 0.58
                       0.8 0 0 0 -0.30"
             />
             <feGaussianBlur stdDeviation="6" />
