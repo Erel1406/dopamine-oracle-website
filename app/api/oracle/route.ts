@@ -7,6 +7,13 @@ import {
 } from "ai";
 import { getSignById } from "@/lib/zodiac";
 import { hasOracleCredentials, ORACLE_MODEL, oracleSystemPrompt } from "@/lib/oracle";
+import { FREE_QUESTIONS } from "@/lib/plan";
+import {
+  freeQuestionsCookie,
+  getPremiumUser,
+  readFreeQuestionsUsed,
+} from "@/lib/premium";
+import { dailyLimitReached, recordTokens } from "@/lib/usage";
 
 export const maxDuration = 30;
 
@@ -46,14 +53,44 @@ export async function POST(req: Request) {
     );
   }
 
+  // Subscribers ask freely; everyone else spends the signed-cookie budget.
+  // Counted only once the request is actually accepted, so failed calls
+  // never burn a free question.
+  const { userId, subscribed } = await getPremiumUser();
+  let setCookie: string | null = null;
+  if (!subscribed) {
+    const used = readFreeQuestionsUsed(req);
+    if (used >= FREE_QUESTIONS) {
+      return Response.json(
+        { error: "The Oracle's free counsel is spent." },
+        { status: 402 }
+      );
+    }
+    setCookie = freeQuestionsCookie(used + 1);
+  }
+
+  // Fair-use guard for logged-in users (incl. "unlimited" subscribers):
+  // a per-user daily token cap. Anonymous users are already question-capped.
+  if (userId && (await dailyLimitReached(userId))) {
+    return Response.json(
+      { error: "The stars need to rest — you've reached today's limit." },
+      { status: 429 }
+    );
+  }
+
   const result = streamText({
     model: ORACLE_MODEL,
     system: oracleSystemPrompt(sign),
     messages: await convertToModelMessages(recent),
     maxOutputTokens: 400,
+    onFinish: userId
+      ? ({ usage }) => recordTokens(userId, usage?.totalTokens ?? 0)
+      : undefined,
   });
 
-  return createUIMessageStreamResponse({
+  const response = createUIMessageStreamResponse({
     stream: toUIMessageStream({ stream: result.stream }),
   });
+  if (setCookie) response.headers.append("Set-Cookie", setCookie);
+  return response;
 }

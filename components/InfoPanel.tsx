@@ -58,7 +58,7 @@ export default function InfoPanel({
   sign: ZodiacSign | null;
   onClose: () => void;
 }) {
-  const { subscribed, subscribe } = useSubscription();
+  const { subscribed, subscribe, checkoutError } = useSubscription();
   const scrollToOracle = () => {
     document
       .getElementById("oracle-cta")
@@ -272,9 +272,14 @@ export default function InfoPanel({
                     </button>
                   )}
 
+                  {checkoutError && (
+                    <p className="mt-3 text-center text-[11px] text-ember/90">
+                      {checkoutError}
+                    </p>
+                  )}
                   <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] text-white/35">
-                    <Gem size={11} /> Cancel anytime · Demo checkout — payment
-                    coming soon
+                    <Gem size={11} /> Cancel anytime · Secure checkout via
+                    Stripe
                   </p>
                 </div>
               </div>

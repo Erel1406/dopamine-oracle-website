@@ -1,70 +1,83 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { FREE_QUESTIONS } from "./plan";
+
+export { FREE_QUESTIONS, MONTHLY_PRICE } from "./plan";
 
 /**
- * Mock subscription state, kept in localStorage until real auth + Stripe
- * land. The paywall UX (free questions → lock → subscribe → unlimited) is
- * fully wired so swapping in Stripe later only replaces these primitives.
+ * Client view of the premium state. The server (/api/me) is the source of
+ * truth: subscription status comes from Clerk metadata, the free-question
+ * count from the signed HttpOnly cookie set by /api/oracle.
  *
- * TODO(stripe): replace with real subscription status from the backend.
+ * subscribe() → Stripe Checkout; signs the visitor in first if needed.
  */
 
-const SUB_KEY = "zodiac_subscribed";
-const USED_KEY = "zodiac_oracle_questions_used";
-const CHANGE_EVENT = "zodiac:subscription-change";
+type Status = {
+  signedIn: boolean;
+  subscribed: boolean;
+  used: number;
+  paymentsConfigured: boolean;
+};
 
-export const FREE_QUESTIONS = 3;
-export const MONTHLY_PRICE = "€9.99";
+const INITIAL: Status = {
+  signedIn: false,
+  subscribed: false,
+  used: 0,
+  paymentsConfigured: false,
+};
 
-export function isSubscribed(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(SUB_KEY) === "true";
-}
-
-export function subscribeMock() {
-  window.localStorage.setItem(SUB_KEY, "true");
-  window.dispatchEvent(new Event(CHANGE_EVENT));
-}
-
-export function questionsUsed(): number {
-  if (typeof window === "undefined") return 0;
-  return Number(window.localStorage.getItem(USED_KEY) ?? "0") || 0;
-}
-
-export function recordQuestion(): number {
-  const next = questionsUsed() + 1;
-  window.localStorage.setItem(USED_KEY, String(next));
-  window.dispatchEvent(new Event(CHANGE_EVENT));
-  return next;
-}
-
-/** Reactive view of the mock subscription + free-question budget. */
 export function useSubscription() {
-  const [subscribed, setSubscribed] = useState(false);
-  const [used, setUsed] = useState(0);
+  const [status, setStatus] = useState<Status>(INITIAL);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const sync = () => {
-      setSubscribed(isSubscribed());
-      setUsed(questionsUsed());
-    };
-    sync();
-    window.addEventListener(CHANGE_EVENT, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, sync);
-      window.removeEventListener("storage", sync);
-    };
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/me", { cache: "no-store" });
+      if (res.ok) setStatus(await res.json());
+    } catch {
+      // keep last known state
+    }
   }, []);
 
-  const subscribe = useCallback(() => subscribeMock(), []);
+  useEffect(() => {
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [refresh]);
+
+  const subscribe = useCallback(async () => {
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/checkout", { method: "POST" });
+      if (res.status === 401) {
+        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(
+          window.location.href
+        )}`;
+        return;
+      }
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setCheckoutError(
+        typeof data?.error === "string"
+          ? data.error
+          : "Checkout failed — try again."
+      );
+    } catch {
+      setCheckoutError("Checkout failed — try again.");
+    }
+  }, []);
 
   return {
-    subscribed,
-    used,
-    remaining: Math.max(0, FREE_QUESTIONS - used),
-    locked: !subscribed && used >= FREE_QUESTIONS,
+    subscribed: status.subscribed,
+    used: status.used,
+    remaining: Math.max(0, FREE_QUESTIONS - status.used),
+    locked: !status.subscribed && status.used >= FREE_QUESTIONS,
     subscribe,
+    refresh,
+    checkoutError,
   };
 }

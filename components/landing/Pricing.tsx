@@ -22,7 +22,7 @@ const PREMIUM = [
 ];
 
 export default function Pricing() {
-  const { subscribed, subscribe } = useSubscription();
+  const { subscribed, subscribe, checkoutError } = useSubscription();
   return (
     <section id="pricing" className="relative px-5 py-24 md:px-8 md:py-32">
       <SectionHeading
@@ -126,9 +126,13 @@ export default function Pricing() {
                 </span>
               </button>
             )}
+            {checkoutError && (
+              <p className="mt-3 text-center text-[11px] text-ember/90">
+                {checkoutError}
+              </p>
+            )}
             <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] text-white/35">
-              <Gem size={11} /> Cancel anytime · Demo checkout — payment coming
-              soon
+              <Gem size={11} /> Cancel anytime · Secure checkout via Stripe
             </p>
           </div>
         </motion.div>

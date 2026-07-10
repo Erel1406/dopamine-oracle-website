@@ -9,7 +9,6 @@ import type { ZodiacSign } from "@/lib/zodiac";
 import {
   FREE_QUESTIONS,
   MONTHLY_PRICE,
-  recordQuestion,
   useSubscription,
 } from "@/lib/subscription";
 
@@ -34,12 +33,17 @@ export default function OracleChat({
   onConsult: () => void;
 }) {
   const [input, setInput] = useState("");
-  const { subscribed, remaining, locked, subscribe } = useSubscription();
+  const { subscribed, remaining, locked, subscribe, refresh, checkoutError } =
+    useSubscription();
   const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/oracle",
       body: { sign: sign.id },
     }),
+    // /api/oracle counts the question server-side (signed cookie);
+    // re-sync the budget after every attempt, successful or not.
+    onFinish: () => refresh(),
+    onError: () => refresh(),
   });
 
   const busy = status === "submitted" || status === "streaming";
@@ -49,11 +53,6 @@ export default function OracleChat({
     if (!text || busy || locked) return;
     setInput("");
     sendMessage({ text });
-    if (!subscribed) {
-      // Client-side budget only while the paywall is mocked.
-      // TODO(stripe): enforce server-side once auth exists.
-      recordQuestion();
-    }
   };
 
   return (
@@ -181,9 +180,11 @@ export default function OracleChat({
           >
             Join the Oracle — {MONTHLY_PRICE}/mo
           </button>
+          {checkoutError && (
+            <p className="mt-2.5 text-[11px] text-ember/90">{checkoutError}</p>
+          )}
           <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[11px] text-white/35">
-            <Gem size={11} /> Cancel anytime · Demo checkout — payment coming
-            soon
+            <Gem size={11} /> Cancel anytime · Secure checkout via Stripe
           </p>
           <button
             type="button"

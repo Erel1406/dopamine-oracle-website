@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 // Cinzel — an engraved, occult-leaning serif for headings & glyphs.
@@ -33,9 +34,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
+  const page = (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="bg-noir font-sans antialiased">{children}</body>
     </html>
+  );
+  // The site must keep working before Clerk keys exist.
+  return process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
+    <ClerkProvider>{page}</ClerkProvider>
+  ) : (
+    page
   );
 }

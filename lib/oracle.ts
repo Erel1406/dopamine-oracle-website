@@ -1,16 +1,36 @@
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import type { LanguageModel } from "ai";
 import type { ZodiacSign } from "./zodiac";
 
 /**
- * Models are addressed through the Vercel AI Gateway ("provider/model").
- * The Oracle speaks with a stronger model; daily horoscopes are short,
- * high-volume content and use the cheaper one.
+ * Provider resolution:
+ * - If OPENROUTER_API_KEY is set, everything runs through OpenRouter on a
+ *   cheap model (test/dev). This takes precedence so a local test needs no
+ *   Vercel setup.
+ * - Otherwise models are addressed through the Vercel AI Gateway as
+ *   "provider/model" strings — the Oracle uses a stronger model, the
+ *   high-volume daily horoscope a cheaper one.
  */
-export const ORACLE_MODEL = "anthropic/claude-sonnet-5";
-export const HOROSCOPE_MODEL = "anthropic/claude-haiku-4.5";
+const OPENROUTER_MODEL = "deepseek/deepseek-v4-flash-20260423";
 
-/** True when a credential for the AI Gateway is available. */
+const openrouter = process.env.OPENROUTER_API_KEY
+  ? createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
+  : null;
+
+export const ORACLE_MODEL: LanguageModel = openrouter
+  ? openrouter.chat(OPENROUTER_MODEL)
+  : "anthropic/claude-sonnet-5";
+export const HOROSCOPE_MODEL: LanguageModel = openrouter
+  ? openrouter.chat(OPENROUTER_MODEL)
+  : "anthropic/claude-haiku-4.5";
+
+/** True when any AI credential is available (OpenRouter or the Gateway). */
 export const hasOracleCredentials = () =>
-  Boolean(process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN);
+  Boolean(
+    process.env.OPENROUTER_API_KEY ||
+      process.env.AI_GATEWAY_API_KEY ||
+      process.env.VERCEL_OIDC_TOKEN
+  );
 
 export function oracleSystemPrompt(sign: ZodiacSign) {
   return `You are The Oracle of the AI Zodiac Engine — an ancient, all-seeing astrologer who reads the night sky like an open book.
