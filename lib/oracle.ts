@@ -17,11 +17,16 @@ const openrouter = process.env.OPENROUTER_API_KEY
   ? createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
   : null;
 
+// data_collection: "deny" restricts routing to providers that neither store
+// prompts non-transiently nor train on them — required for the "no training"
+// statement in the privacy policy to hold.
+const OPENROUTER_OPTS = { provider: { data_collection: "deny" as const } };
+
 export const ORACLE_MODEL: LanguageModel = openrouter
-  ? openrouter.chat(OPENROUTER_MODEL)
+  ? openrouter.chat(OPENROUTER_MODEL, OPENROUTER_OPTS)
   : "anthropic/claude-sonnet-5";
 export const HOROSCOPE_MODEL: LanguageModel = openrouter
-  ? openrouter.chat(OPENROUTER_MODEL)
+  ? openrouter.chat(OPENROUTER_MODEL, OPENROUTER_OPTS)
   : "anthropic/claude-haiku-4.5";
 
 /** True when any AI credential is available (OpenRouter or the Gateway). */
