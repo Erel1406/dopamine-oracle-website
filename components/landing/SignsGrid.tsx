@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Constellation from "@/components/Constellation";
+import SignArt from "@/components/SignArt";
 import SectionHeading from "./SectionHeading";
 import { ZODIAC_SIGNS } from "@/lib/zodiac";
 import { cn } from "@/lib/utils";
@@ -36,9 +36,11 @@ export default function SignsGrid() {
               href={`/map?sign=${sign.id}`}
               className="group flex h-full flex-col items-center rounded-2xl glass-card px-4 py-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:shadow-[0_0_40px_-14px_rgba(120,205,235,0.5)]"
             >
-              <div className="flex h-24 w-24 items-center justify-center transition-transform duration-500 group-hover:scale-110">
-                <Constellation sign={sign} size={92} variant="mini" />
-              </div>
+              <SignArt
+                sign={sign}
+                sizes="(max-width: 640px) 30vw, 96px"
+                className="h-24 w-24 rounded-2xl ring-1 ring-white/10 transition-transform duration-500 group-hover:scale-110"
+              />
               <h3 className="mt-3 font-display text-base tracking-wide text-white">
                 {sign.name}
               </h3>

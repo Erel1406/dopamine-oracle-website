@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import type { ZodiacSign } from "@/lib/zodiac";
 import { MONTHLY_PRICE, useSubscription } from "@/lib/subscription";
-import Constellation from "./Constellation";
+import SignArt from "./SignArt";
 import OracleChat from "./OracleChat";
 
 const PREMIUM_FEATURES = [
@@ -102,9 +102,11 @@ export default function InfoPanel({
             {/* ── Header ───────────────────────────────── */}
             <header className="flex items-start justify-between gap-4 px-7 pt-7">
               <div className="flex items-center gap-3">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/10 bg-noir-900/60">
-                  <Constellation sign={sign} size={52} active variant="mini" />
-                </div>
+                <SignArt
+                  sign={sign}
+                  sizes="64px"
+                  className="h-16 w-16 rounded-xl border border-white/10"
+                />
                 <div>
                   <h2 className="font-display text-2xl leading-none tracking-wide text-white">
                     {sign.name}
