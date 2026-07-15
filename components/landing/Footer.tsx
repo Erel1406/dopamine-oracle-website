@@ -22,8 +22,10 @@ const COLS = [
     title: "Engine",
     links: [
       { label: "About", href: "/#features" },
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Impressum", href: "/impressum" },
+      { label: "Datenschutz", href: "/datenschutz" },
+      { label: "AGB & Widerruf", href: "/agb" },
+      { label: "Verträge hier kündigen", href: "/cancel" },
     ],
   },
 ];
@@ -67,7 +69,10 @@ export default function Footer() {
       </div>
 
       <div className="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 text-center text-xs text-white/30 sm:flex-row sm:text-left">
-        <span>© {new Date().getFullYear()} AI Zodiac Engine. The stars owe you nothing.</span>
+        <span>
+          © {new Date().getFullYear()} AI Zodiac Engine. The stars owe you
+          nothing. Readings are AI-generated, for entertainment only.
+        </span>
         <span className="uppercase tracking-[0.3em]">Cinematic · Neo-Occult</span>
       </div>
     </footer>

@@ -218,6 +218,11 @@ export default function OracleChat({
           </button>
         </form>
       )}
+
+      {/* Art. 50 AI Act: discreet but always visible at the interaction. */}
+      <p className="mt-3 text-center text-[10px] tracking-wide text-white/25">
+        The Oracle is AI-generated · for entertainment, not advice
+      </p>
     </div>
   );
 }
